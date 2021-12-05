@@ -10,7 +10,7 @@ docker-compose stop backup
 
 echo "> Await databases..."
 # Only check postgres, that should be fine
-docker-compose exec psql pg_isready -U postgres
+docker-compose exec -T psql pg_isready -U postgres
 
 echo "> Run backups..."
 docker-compose run backup db-auto-backup
