@@ -3,6 +3,19 @@ name: CI
 on: [push, pull_request]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v1
+      with:
+        python-version: "3.10"
+    - name: Install Python dependencies
+      run: pip install -r dev-requirements.txt
+    - name: Lint
+      run: ./scripts/lint.sh
+
   container-build:
     runs-on: ubuntu-latest
     steps:
