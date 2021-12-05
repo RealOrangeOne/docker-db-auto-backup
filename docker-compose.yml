@@ -2,5 +2,25 @@ services:
   backup:
     build:
       context: .
+    restart: unless-stopped
     volumes:
-      - "/var/lib/docker.sock:/var/lib/docker.sock:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - ./backups:/var/backups
+
+  psql:
+    image: postgres:alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD=password
+
+  mariadb:
+    image: mariadb:latest
+    restart: unless-stopped
+    environment:
+      - MARIADB_ROOT_PASSWORD=password
+
+  mysql:
+    image: mysql:latest
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
