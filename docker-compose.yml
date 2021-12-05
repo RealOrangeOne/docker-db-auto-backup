@@ -1,0 +1,6 @@
+services:
+  backup:
+    build:
+      context: .
+    volumes:
+      - "/var/lib/docker.sock:/var/lib/docker.sock:ro"

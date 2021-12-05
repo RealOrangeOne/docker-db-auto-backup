@@ -10,4 +10,13 @@ jobs:
     - name: Install shellcheck
       run: sudo apt-get update && sudo apt-get install -y shellcheck
     - name: shellcheck
-      run: shellcheck docker-db-auto-backup
+      run: shellcheck db-auto-backup
+
+  container-build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build image
+      run: docker-compose build
+    - name: Show image info
+      run: docker images
