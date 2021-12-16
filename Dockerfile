@@ -1,6 +1,7 @@
 FROM python:alpine
 
 WORKDIR /usr/src/db-auto-backup
+RUN mkdir -p /var/backups
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
