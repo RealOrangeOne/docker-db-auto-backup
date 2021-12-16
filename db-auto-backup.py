@@ -11,7 +11,7 @@ BackupCandidate = Callable[[Container], str]
 
 
 def backup_psql(container: Container) -> str:
-    return "bash -c 'PGPASSWORD=$POSTGRES_PASSWORD pg_dumpall -U postgres'"
+    return "pg_dumpall -U postgres"
 
 
 def backup_mysql(container: Container) -> str:
