@@ -47,10 +47,6 @@ def main() -> None:
         container_names = [tag.rsplit(":", 1)[0] for tag in container.image.tags]
         backup_method = get_backup_method(container_names)
         if backup_method is None:
-            print(
-                "Unsure how to backup",
-                ", ".join([tag.rsplit(":", 1)[0] for tag in container.image.tags]),
-            )
             continue
 
         backup_command = backup_method(container)
