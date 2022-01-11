@@ -7,6 +7,10 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - ./backups:/var/backups
       - ./db-auto-backup.py:/usr/src/db-auto-backup/db-auto-backup.py:ro
+    depends_on:
+      - psql
+      - mariadb
+      - mysql
 
   psql:
     image: postgres:alpine
