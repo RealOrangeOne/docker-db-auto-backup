@@ -29,7 +29,15 @@ def backup_psql(container: Container) -> str:
 
 
 def backup_mysql(container: Container) -> str:
-    return "bash -c 'mysqldump -p$MYSQL_ROOT_PASSWORD --all-databases'"
+    env = get_container_env(container)
+
+    # The mariadb container supports both
+    if "MARIADB_ROOT_PASSWORD" in env:
+        auth = "-p$MARIADB_ROOT_PASSWORD"
+    else:
+        auth = "-p$MYSQL_ROOT_PASSWORD"
+
+    return f"bash -c 'mysqldump {auth} --all-databases'"
 
 
 BACKUP_MAPPING: Dict[str, BackupCandidate] = {
