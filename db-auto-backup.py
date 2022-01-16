@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import fnmatch
+import os
+import urllib.request
 from io import StringIO
 from pathlib import Path
 from typing import Callable, Dict, Optional, Sequence
@@ -79,6 +81,12 @@ def main() -> None:
                 if stdout is None:
                     continue
                 f.write(stdout)
+
+    if healthchecks_id := os.environ.get("HEALTHCHECKS_ID"):
+        healthchecks_host = os.environ.get("HEALTHCHECKS_HOST", "hc-ping.com")
+        urllib.request.urlopen(
+            f"https://{healthchecks_host}/{healthchecks_id}", timeout=10
+        )
 
 
 if __name__ == "__main__":
