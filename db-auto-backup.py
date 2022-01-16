@@ -72,11 +72,11 @@ def main() -> None:
         print("Backing up", container.name, backup_file)
         _, output = container.exec_run(backup_command, stream=True, demux=True)
 
-        with backup_file.open(mode="w") as f:
+        with backup_file.open(mode="wb") as f:
             for stdout, _ in output:
                 if stdout is None:
                     continue
-                f.write(stdout.decode())
+                f.write(stdout)
 
 
 if __name__ == "__main__":
