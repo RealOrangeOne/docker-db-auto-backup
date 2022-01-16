@@ -18,14 +18,10 @@ def backup_mysql(container: Container) -> str:
     return "bash -c 'mysqldump -p$MYSQL_ROOT_PASSWORD --all-databases'"
 
 
-def backup_mariadb(container: Container) -> str:
-    return "bash -c 'mysqldump -p$MARIADB_ROOT_PASSWORD --all-databases'"
-
-
 BACKUP_MAPPING: Dict[str, BackupCandidate] = {
     "postgres": backup_psql,
     "mysql": backup_mysql,
-    "mariadb": backup_mariadb,
+    "mariadb": backup_mysql,  # Basically the same thing
 }
 
 BACKUP_DIR = Path("/var/backups")
