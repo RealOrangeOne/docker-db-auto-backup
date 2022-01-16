@@ -8,6 +8,7 @@ from typing import Callable, Dict, Optional, Sequence
 import docker
 from docker.models.containers import Container
 from dotenv import dotenv_values
+from tqdm.auto import tqdm
 
 BackupCandidate = Callable[[Container], str]
 
@@ -69,10 +70,11 @@ def main() -> None:
 
         backup_command = backup_method(container)
         backup_file = BACKUP_DIR / f"{container.name}.sql"
-        print("Backing up", container.name, backup_file)
         _, output = container.exec_run(backup_command, stream=True, demux=True)
 
-        with backup_file.open(mode="wb") as f:
+        with tqdm.wrapattr(
+            backup_file.open(mode="wb"), method="write", desc=container.name
+        ) as f:
             for stdout, _ in output:
                 if stdout is None:
                     continue
