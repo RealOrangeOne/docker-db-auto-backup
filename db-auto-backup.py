@@ -1,17 +1,31 @@
 #!/usr/bin/env python3
 
 import fnmatch
+from io import StringIO
 from pathlib import Path
 from typing import Callable, Dict, Optional, Sequence
 
 import docker
 from docker.models.containers import Container
+from dotenv import dotenv_values
 
 BackupCandidate = Callable[[Container], str]
 
 
+def get_container_env(container: Container) -> Dict[str, Optional[str]]:
+    """
+    Get all environment variables from a container.
+
+    Variables at runtime, rather than those defined in the container.
+    """
+    _, (env_output, _) = container.exec_run("env", demux=True)
+    return dict(dotenv_values(stream=StringIO(env_output.decode())))
+
+
 def backup_psql(container: Container) -> str:
-    return "pg_dumpall -U postgres"
+    env = get_container_env(container)
+    user = env.get("POSTGRES_USER", "postgres")
+    return f"pg_dumpall -U {user}"
 
 
 def backup_mysql(container: Container) -> str:
