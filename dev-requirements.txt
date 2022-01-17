@@ -7,5 +7,5 @@ flake8-builtins>=1<2
 flake8-comprehensions>=3<4
 flake8-mutable>=1<2
 flake8-tuple>=0.4<1
-isort==5.9.3
+isort==5.10.1
 mypy==0.910
