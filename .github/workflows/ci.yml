@@ -6,7 +6,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Set up Python 3.10
       uses: actions/setup-python@v1
       with:
@@ -19,7 +19,7 @@ jobs:
   e2e-test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Fetch containers
       run: docker-compose build && docker-compose pull
     - name: Run test
