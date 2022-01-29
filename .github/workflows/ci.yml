@@ -61,4 +61,4 @@ jobs:
           platforms: linux/arm,linux/amd64,linux/arm64/v8
           tags: |
             ghcr.io/realorangeone/db-auto-backup:latest
-            theorangeone/traefik-pages:latest
+            theorangeone/db-auto-backup:latest
