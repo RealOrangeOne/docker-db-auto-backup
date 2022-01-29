@@ -19,3 +19,19 @@ Mount your backup directory as `/var/backups`. Backups will be saved here based 
 Backups run daily, using cron's daily timer.
 
 Additionally, there is support for [healthchecks.io](https://healthchecks.io). `$HEALTHCHECKS_ID` can be used to specify the id to ping. If you're using a self-hosted instance, set `$HEALTHCHECKS_HOST`.
+
+### Example `docker-compose.yml`
+
+```yml
+version: "2.3"
+
+services:
+  backup:
+    image: ghcr.io/realorangeone/db-auto-backup:latest
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./backups:/var/backups"
+    environment:
+      - HEALTHCHECKS_ID=id
+```
