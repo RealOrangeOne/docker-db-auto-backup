@@ -51,7 +51,7 @@ BACKUP_MAPPING: Dict[str, BackupCandidate] = {
     "mariadb": backup_mysql,  # Basically the same thing
 }
 
-BACKUP_DIR = Path("/var/backups")
+BACKUP_DIR = Path(os.environ.get("BACKUP_DIR", "/var/backups"))
 SCHEDULE = os.environ.get("SCHEDULE", "@daily")
 
 
