@@ -16,7 +16,7 @@ This container requires access to the docker socket. This can be done either by 
 
 Mount your backup directory as `/var/backups`. Backups will be saved here based on the name of the container. Backups are not dated or compressed.
 
-Backups run daily, using cron's daily timer.
+Backups run daily. To change this, add a cron-style schedule to `$SCHEDULE`. For more information on the format of the cron strings, please see the [croniter documentation on PyPI](https://pypi.org/project/croniter/).
 
 Additionally, there is support for [healthchecks.io](https://healthchecks.io). `$HEALTHCHECKS_ID` can be used to specify the id to ping. If you're using a self-hosted instance, set `$HEALTHCHECKS_HOST`.
 
