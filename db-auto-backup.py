@@ -3,11 +3,13 @@
 import fnmatch
 import os
 import urllib.request
+from datetime import datetime
 from io import StringIO
 from pathlib import Path
 from typing import Callable, Dict, Optional, Sequence
 
 import docker
+import pycron
 from docker.models.containers import Container
 from dotenv import dotenv_values
 from tqdm.auto import tqdm
@@ -50,6 +52,7 @@ BACKUP_MAPPING: Dict[str, BackupCandidate] = {
 }
 
 BACKUP_DIR = Path("/var/backups")
+SCHEDULE = os.environ.get("SCHEDULE", "@daily")
 
 
 def get_backup_method(container_names: Sequence[str]) -> Optional[BackupCandidate]:
@@ -61,7 +64,8 @@ def get_backup_method(container_names: Sequence[str]) -> Optional[BackupCandidat
     return None
 
 
-def main() -> None:
+@pycron.cron(SCHEDULE)
+def backup(timestamp: datetime) -> None:
     docker_client = docker.from_env()
 
     for container in docker_client.containers.list():
@@ -90,4 +94,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    if "SCHEDULE" in os.environ:
+        pycron.start()
+    else:
+        backup(datetime.now())
