@@ -94,7 +94,7 @@ def backup(timestamp: datetime) -> None:
 
 
 if __name__ == "__main__":
-    if "SCHEDULE" in os.environ:
+    if os.environ.get("SCHEDULE"):
         pycron.start()
     else:
         backup(datetime.now())
