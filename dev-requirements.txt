@@ -1,6 +1,6 @@
 -r requirements.txt
 
-black==21.9b0
+black==22.1.0
 flake8>=3.8<4
 flake8-bugbear>=20<21
 flake8-builtins>=1<2
