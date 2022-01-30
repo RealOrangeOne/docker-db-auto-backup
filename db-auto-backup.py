@@ -2,7 +2,6 @@
 
 import fnmatch
 import os
-import urllib.request
 from datetime import datetime
 from io import StringIO
 from pathlib import Path
@@ -10,6 +9,7 @@ from typing import Callable, Dict, Optional, Sequence
 
 import docker
 import pycron
+import requests
 from docker.models.containers import Container
 from dotenv import dotenv_values
 from tqdm.auto import tqdm
@@ -68,6 +68,8 @@ def get_backup_method(container_names: Sequence[str]) -> Optional[BackupCandidat
 def backup(timestamp: datetime) -> None:
     docker_client = docker.from_env()
 
+    backed_up_containers = []
+
     for container in docker_client.containers.list():
         container_names = [tag.rsplit(":", 1)[0] for tag in container.image.tags]
         backup_method = get_backup_method(container_names)
@@ -86,11 +88,14 @@ def backup(timestamp: datetime) -> None:
                     continue
                 f.write(stdout)
 
+        backed_up_containers.append(container.name)
+
     if healthchecks_id := os.environ.get("HEALTHCHECKS_ID"):
         healthchecks_host = os.environ.get("HEALTHCHECKS_HOST", "hc-ping.com")
-        urllib.request.urlopen(
-            f"https://{healthchecks_host}/{healthchecks_id}", timeout=10
-        )
+        requests.post(
+            f"https://{healthchecks_host}/{healthchecks_id}",
+            data="\n".join(backed_up_containers),
+        ).raise_for_status()
 
 
 if __name__ == "__main__":
