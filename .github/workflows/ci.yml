@@ -6,7 +6,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python 3.10
       uses: actions/setup-python@v2
       with:
@@ -19,7 +19,7 @@ jobs:
   e2e-test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Fetch containers
       run: docker-compose build && docker-compose pull
     - name: Run test
@@ -31,7 +31,7 @@ jobs:
       - lint
       - e2e-test
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Login to DockerHub
         if: ${{ github.ref == 'refs/heads/master' }}
