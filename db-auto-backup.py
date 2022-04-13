@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import asyncio
 import fnmatch
 import os
 from datetime import datetime
@@ -65,7 +66,7 @@ def get_backup_method(container_names: Sequence[str]) -> Optional[BackupCandidat
 
 
 @pycron.cron(SCHEDULE)
-def backup(timestamp: datetime) -> None:
+async def backup(timestamp: datetime) -> None:
     docker_client = docker.from_env()
 
     backed_up_containers = []
@@ -102,4 +103,4 @@ if __name__ == "__main__":
     if os.environ.get("SCHEDULE"):
         pycron.start()
     else:
-        backup(datetime.now())
+        asyncio.run(backup(datetime.now()))
