@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
-
-import asyncio
 import fnmatch
 import os
-from datetime import datetime
+import sys
 from io import StringIO
 from pathlib import Path
 from typing import Callable, Dict, Optional, Sequence
 
 import docker
-import pycron
 import requests
 from docker.models.containers import Container
 from dotenv import dotenv_values
@@ -53,7 +50,7 @@ BACKUP_MAPPING: Dict[str, BackupCandidate] = {
 }
 
 BACKUP_DIR = Path(os.environ.get("BACKUP_DIR", "/var/backups"))
-SCHEDULE = os.environ.get("SCHEDULE", "@daily")
+SHOW_PROGRESS = sys.stdout.isatty()
 
 
 def get_backup_method(container_names: Sequence[str]) -> Optional[BackupCandidate]:
@@ -65,8 +62,7 @@ def get_backup_method(container_names: Sequence[str]) -> Optional[BackupCandidat
     return None
 
 
-@pycron.cron(SCHEDULE)
-async def backup(timestamp: datetime) -> None:
+def backup() -> None:
     docker_client = docker.from_env()
 
     backed_up_containers = []
@@ -82,12 +78,18 @@ async def backup(timestamp: datetime) -> None:
         _, output = container.exec_run(backup_command, stream=True, demux=True)
 
         with tqdm.wrapattr(
-            backup_file.open(mode="wb"), method="write", desc=container.name
+            backup_file.open(mode="wb"),
+            method="write",
+            desc=container.name,
+            disable=not SHOW_PROGRESS,
         ) as f:
             for stdout, _ in output:
                 if stdout is None:
                     continue
                 f.write(stdout)
+
+        if not SHOW_PROGRESS:
+            print(container.name)
 
         backed_up_containers.append(container.name)
 
@@ -100,7 +102,4 @@ async def backup(timestamp: datetime) -> None:
 
 
 if __name__ == "__main__":
-    if os.environ.get("SCHEDULE"):
-        pycron.start()
-    else:
-        asyncio.run(backup(datetime.now()))
+    backup()

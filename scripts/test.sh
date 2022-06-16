@@ -13,8 +13,7 @@ echo "> Await databases..."
 docker-compose exec -T psql pg_isready -U postgres
 
 echo "> Run backups..."
-# Unset `$SCHEDULE` to run just once
-docker-compose run -e "SCHEDULE=" backup ./db-auto-backup.py
+docker-compose run backup ./db-auto-backup.py
 
 echo "> Clean up..."
 docker-compose down
