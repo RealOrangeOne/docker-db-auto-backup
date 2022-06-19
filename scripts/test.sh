@@ -16,7 +16,7 @@ do
 done
 
 echo "> Run backups..."
-docker-compose run backup ./db-auto-backup.py
+time docker-compose run backup ./db-auto-backup.py
 
 echo "> Clean up..."
 docker-compose down
