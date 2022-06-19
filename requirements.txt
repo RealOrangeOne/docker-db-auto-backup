@@ -1,4 +1,4 @@
 docker==5.0.3
-python-dotenv==0.19.2
+python-dotenv==0.20.0
 tqdm==4.64.0
 requests
