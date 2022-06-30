@@ -1,22 +1,8 @@
-FROM alpine as alpine
-
-RUN apk add --no-cache supercronic
-
-FROM python:slim
+FROM python:alpine
 
 ENV SCHEDULE "@daily"
 
-# Supercronic dynamically links to libc.musl
-RUN apt-get update && \
-  apt-get install -y musl-dev && \
-  ln -s /usr/lib/x86_64-linux-musl/libc.so /lib/libc.musl-x86_64.so.1 && \
-  apt-get autoclean && \
-  rm -rf \
-    /var/lib/apt/lists/* \
-    /var/tmp/* \
-    /tmp/*
-
-COPY --from=alpine /usr/bin/supercronic /usr/bin/supercronic
+RUN apk add --no-cache supercronic
 
 WORKDIR /usr/src/db-auto-backup
 RUN mkdir -p /var/backups
