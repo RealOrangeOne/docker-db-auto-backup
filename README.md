@@ -31,7 +31,7 @@ services:
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./backups:/var/backups"
+      - ./backups:/var/backups
     environment:
       - HEALTHCHECKS_ID=id
 ```
