@@ -2,7 +2,7 @@ FROM python:alpine
 
 ENV SCHEDULE "@daily"
 
-RUN apk add --no-cache supercronic
+RUN apk add --no-cache supercronic tzdata
 
 WORKDIR /usr/src/db-auto-backup
 RUN mkdir -p /var/backups
