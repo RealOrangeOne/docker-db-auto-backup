@@ -16,7 +16,8 @@ do
 done
 
 echo "> Run backups..."
-time docker-compose run backup ./db-auto-backup.py
+# Unset `$SCHEDULE` to run just once
+docker-compose run -e "SCHEDULE=" backup ./db-auto-backup.py
 
 echo "> Clean up..."
 docker-compose down

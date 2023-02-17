@@ -2,11 +2,13 @@
 import fnmatch
 import os
 import sys
+from datetime import datetime
 from io import StringIO
 from pathlib import Path
 from typing import Callable, Dict, Optional, Sequence
 
 import docker
+import pycron
 import requests
 from docker.models.containers import Container
 from dotenv import dotenv_values
@@ -50,6 +52,7 @@ BACKUP_MAPPING: Dict[str, BackupCandidate] = {
 }
 
 BACKUP_DIR = Path(os.environ.get("BACKUP_DIR", "/var/backups"))
+SCHEDULE = os.environ.get("SCHEDULE", "@daily")
 SHOW_PROGRESS = sys.stdout.isatty()
 
 
@@ -62,7 +65,8 @@ def get_backup_method(container_names: Sequence[str]) -> Optional[BackupCandidat
     return None
 
 
-def backup() -> None:
+@pycron.cron(SCHEDULE)
+def backup(now: datetime) -> None:
     docker_client = docker.from_env()
 
     backed_up_containers = []
@@ -93,6 +97,9 @@ def backup() -> None:
 
         backed_up_containers.append(container.name)
 
+    duration = (datetime.now() - now).total_seconds()
+    print(f"Backup complete in {duration:.2f} seconds.")
+
     if healthchecks_id := os.environ.get("HEALTHCHECKS_ID"):
         healthchecks_host = os.environ.get("HEALTHCHECKS_HOST", "hc-ping.com")
         requests.post(
@@ -102,4 +109,8 @@ def backup() -> None:
 
 
 if __name__ == "__main__":
-    backup()
+    if os.environ.get("SCHEDULE"):
+        print(f"Running backup with schedule '{SCHEDULE}'.")
+        pycron.start()
+    else:
+        backup(datetime.now())
