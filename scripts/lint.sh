@@ -8,8 +8,6 @@ set -x
 
 black db-auto-backup.py --check
 
-flake8 db-auto-backup.py
-
-isort -c db-auto-backup.py
+ruff check db-auto-backup.py
 
 mypy db-auto-backup.py
