@@ -49,6 +49,7 @@ BACKUP_MAPPING: Dict[str, BackupCandidate] = {
     "postgres": backup_psql,
     "mysql": backup_mysql,
     "mariadb": backup_mysql,  # Basically the same thing
+    "*/linuxserver/mariadb": backup_mysql,  # LSIO have their own MariaDB container
 }
 
 BACKUP_DIR = Path(os.environ.get("BACKUP_DIR", "/var/backups"))
