@@ -9,6 +9,7 @@ A script to automatically back up all databases running under docker on a host
 - MariaDB
 - MySQL
 - PostgreSQL
+- Redis
 
 ## Installation
 

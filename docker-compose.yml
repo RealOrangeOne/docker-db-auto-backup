@@ -29,3 +29,7 @@ services:
     restart: unless-stopped
     environment:
       - MYSQL_ROOT_PASSWORD=password
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped

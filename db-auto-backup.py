@@ -51,6 +51,14 @@ def backup_mysql(container: Container) -> str:
     return f"bash -c 'mysqldump {auth} --all-databases'"
 
 
+def backup_redis(container: Container) -> str:
+    """
+    Note: `SAVE` command locks the database, which isn't ideal.
+    Hopefully the commit is fast enough!
+    """
+    return "sh -c 'redis-cli SAVE > /dev/null && cat /data/dump.rdb'"
+
+
 BACKUP_PROVIDERS: list[BackupProvider] = [
     BackupProvider(
         patterns=["postgres"], backup_method=backup_psql, file_extension="sql"
@@ -59,6 +67,9 @@ BACKUP_PROVIDERS: list[BackupProvider] = [
         patterns=["mysql", "mariadb", "*/linuxserver/mariadb"],
         backup_method=backup_mysql,
         file_extension="sql",
+    ),
+    BackupProvider(
+        patterns=["redis"], backup_method=backup_redis, file_extension="rdb"
     ),
 ]
 
