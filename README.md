@@ -36,3 +36,7 @@ services:
     environment:
       - HEALTHCHECKS_ID=id
 ```
+
+### Oneshot
+
+You may want to use this container to run backups just once, rather than on a schedule. To achieve this, set `$SCHEDULE` to an empty string, and the backup will run just once. This may be useful in conjunction with an external scheduler.
