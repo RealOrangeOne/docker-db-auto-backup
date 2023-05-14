@@ -14,12 +14,10 @@ from docker.models.containers import Container
 from dotenv import dotenv_values
 from tqdm.auto import tqdm
 
-BackupCandidate = Callable[[Container], str]
-
 
 class BackupProvider(NamedTuple):
     patterns: list[str]
-    backup_method: BackupCandidate
+    backup_method: Callable[[Container], str]
     file_extension: str
 
 
