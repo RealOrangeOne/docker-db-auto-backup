@@ -1,7 +1,8 @@
-FROM python:3.11-alpine
+FROM python:3.11-slim
 
-RUN apk add --no-cache git
 ENV SCHEDULE="0 0 * * *"
+
+RUN apt-get --yes update && apt-get --yes install git && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/src/db-auto-backup
 RUN mkdir -p /var/backups
