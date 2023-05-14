@@ -75,7 +75,7 @@ BACKUP_PROVIDERS: list[BackupProvider] = [
 
 
 BACKUP_DIR = Path(os.environ.get("BACKUP_DIR", "/var/backups"))
-SCHEDULE = os.environ.get("SCHEDULE", "@daily")
+SCHEDULE = os.environ.get("SCHEDULE", "0 0 * * *")
 SHOW_PROGRESS = sys.stdout.isatty()
 
 

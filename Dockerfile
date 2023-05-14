@@ -1,8 +1,7 @@
 FROM python:3.11-alpine
 
-ENV SCHEDULE "@daily"
-
 RUN apk add --no-cache git
+ENV SCHEDULE="0 0 * * *"
 
 WORKDIR /usr/src/db-auto-backup
 RUN mkdir -p /var/backups
