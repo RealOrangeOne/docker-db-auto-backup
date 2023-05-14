@@ -89,9 +89,8 @@ SHOW_PROGRESS = sys.stdout.isatty()
 def get_backup_provider(container_names: Sequence[str]) -> Optional[BackupProvider]:
     for name in container_names:
         for provider in BACKUP_PROVIDERS:
-            for pattern in provider.patterns:
-                if fnmatch.fnmatch(name, pattern):
-                    return provider
+            if any(fnmatch.fnmatch(name, pattern) for pattern in provider.patterns):
+                return provider
 
     return None
 
