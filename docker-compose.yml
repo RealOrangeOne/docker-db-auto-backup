@@ -11,6 +11,7 @@ services:
       - psql
       - mariadb
       - mysql
+      - redis
 
   psql:
     image: postgres:alpine
