@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-ENV SCHEDULE="0 0 * * *"
+ENV SCHEDULE="0 0 * * *"  PYTHONUNBUFFERED=1
 
 RUN apt-get --yes update && apt-get --yes install git && apt-get clean && rm -rf /var/lib/apt/lists/*
 
