@@ -2,7 +2,7 @@
 
 ![](https://github.com/RealOrangeOne/docker-db-auto-backup/workflows/CI/badge.svg)
 
-A script to automatically back up all databases running under docker on a host
+A script to automatically back up all databases running under docker on a host, with optional compression support.
 
 ## Supported databases
 
@@ -20,6 +20,13 @@ Mount your backup directory as `/var/backups` (or override `$BACKUP_DIR`). Backu
 Backups run daily at midnight. To change this, add a cron-style schedule to `$SCHEDULE`. For more information on the format of the cron strings, please see the [croniter documentation on PyPI](https://pypi.org/project/croniter/).
 
 Additionally, there is support for [healthchecks.io](https://healthchecks.io). `$HEALTHCHECKS_ID` can be used to specify the id to ping. If you're using a self-hosted instance, set `$HEALTHCHECKS_HOST`.
+
+Files are backed up uncompressed by default, on the assumption a snapshotting or native compressed filesystem is being used (eg ZFS). To enable compression, set `$COMPRESSION` to one of the supported algorithms:
+
+- `gzip`
+- `lzma` / `xz`
+- `bz2`
+- `plain` (no compression - the default)
 
 ### Example `docker-compose.yml`
 

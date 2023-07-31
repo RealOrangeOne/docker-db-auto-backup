@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
+import bz2
 import fnmatch
+import gzip
+import lzma
 import os
 import secrets
 import sys
 from datetime import datetime
 from io import StringIO
 from pathlib import Path
-from typing import Callable, Dict, NamedTuple, Optional, Sequence
+from typing import IO, Callable, Dict, NamedTuple, Optional, Sequence
 
 import docker
 import pycron
@@ -38,6 +41,30 @@ def temp_backup_file_name() -> str:
     then atomically replace backup file
     """
     return ".auto-backup-" + secrets.token_hex(4)
+
+
+def open_file_compressed(file_path: Path) -> IO[bytes]:
+    if COMPRESSION == "gzip":
+        return gzip.open(file_path, mode="wb")  # type:ignore
+    elif COMPRESSION in ["lzma", "xz"]:
+        return lzma.open(file_path, mode="wb")
+    elif COMPRESSION == "bz2":
+        return bz2.open(file_path, mode="wb")
+    elif COMPRESSION == "plain":
+        return file_path.open(mode="wb")
+    raise ValueError(f"Unknown compression method {COMPRESSION}")
+
+
+def get_compressed_file_extension() -> str:
+    if COMPRESSION == "gzip":
+        return ".gz"
+    elif COMPRESSION in ["lzma", "xz"]:
+        return ".xz"
+    elif COMPRESSION == "bz2":
+        return ".bz2"
+    elif COMPRESSION == "plain":
+        return ""
+    raise ValueError(f"Unknown compression method {COMPRESSION}")
 
 
 def backup_psql(container: Container) -> str:
@@ -84,6 +111,7 @@ BACKUP_PROVIDERS: list[BackupProvider] = [
 BACKUP_DIR = Path(os.environ.get("BACKUP_DIR", "/var/backups"))
 SCHEDULE = os.environ.get("SCHEDULE", "0 0 * * *")
 SHOW_PROGRESS = sys.stdout.isatty()
+COMPRESSION = os.environ.get("COMPRESSION", "plain")
 
 
 def get_backup_provider(container_names: Sequence[str]) -> Optional[BackupProvider]:
@@ -107,14 +135,17 @@ def backup(now: datetime) -> None:
         if backup_provider is None:
             continue
 
-        backup_file = BACKUP_DIR / f"{container.name}.{backup_provider.file_extension}"
+        backup_file = (
+            BACKUP_DIR
+            / f"{container.name}.{backup_provider.file_extension}{get_compressed_file_extension()}"
+        )
         backup_temp_file = BACKUP_DIR / temp_backup_file_name()
 
         backup_command = backup_provider.backup_method(container)
         _, output = container.exec_run(backup_command, stream=True, demux=True)
 
         with tqdm.wrapattr(
-            backup_temp_file.open(mode="wb"),
+            open_file_compressed(backup_temp_file),
             method="write",
             desc=container.name,
             disable=not SHOW_PROGRESS,
