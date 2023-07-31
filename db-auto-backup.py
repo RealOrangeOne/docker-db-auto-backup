@@ -79,8 +79,10 @@ def backup_mysql(container: Container) -> str:
     # The mariadb container supports both
     if "MARIADB_ROOT_PASSWORD" in env:
         auth = "-p$MARIADB_ROOT_PASSWORD"
-    else:
+    elif "MYSQL_ROOT_PASSWORD" in env:
         auth = "-p$MYSQL_ROOT_PASSWORD"
+    else:
+        raise ValueError(f"Unable to find MySQL root password for {container.name}")
 
     return f"bash -c 'mysqldump {auth} --all-databases'"
 
