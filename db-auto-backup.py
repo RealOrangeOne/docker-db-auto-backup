@@ -141,23 +141,24 @@ def backup(now: datetime) -> None:
             BACKUP_DIR
             / f"{container.name}.{backup_provider.file_extension}{get_compressed_file_extension()}"
         )
-        backup_temp_file = BACKUP_DIR / temp_backup_file_name()
+        backup_temp_file_path = BACKUP_DIR / temp_backup_file_name()
 
         backup_command = backup_provider.backup_method(container)
         _, output = container.exec_run(backup_command, stream=True, demux=True)
 
-        with tqdm.wrapattr(
-            open_file_compressed(backup_temp_file),
-            method="write",
-            desc=container.name,
-            disable=not SHOW_PROGRESS,
-        ) as f:
-            for stdout, _ in output:
-                if stdout is None:
-                    continue
-                f.write(stdout)
+        with open_file_compressed(backup_temp_file_path) as backup_temp_file:
+            with tqdm.wrapattr(
+                backup_temp_file,
+                method="write",
+                desc=container.name,
+                disable=not SHOW_PROGRESS,
+            ) as f:
+                for stdout, _ in output:
+                    if stdout is None:
+                        continue
+                    f.write(stdout)
 
-        os.replace(backup_temp_file, backup_file)
+        os.replace(backup_temp_file_path, backup_file)
 
         if not SHOW_PROGRESS:
             print(container.name)
