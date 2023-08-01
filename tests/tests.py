@@ -20,6 +20,10 @@ def import_file(path: Path) -> Any:
     return mod
 
 
+def normalize_container_name(container_name: str) -> str:
+    return container_name.replace("_", "-")
+
+
 # HACK: The filename isn't compatible with `import foo` syntax
 db_auto_backup = import_file(Path.cwd() / "db-auto-backup.py")
 
@@ -28,7 +32,7 @@ def test_backup_runs(run_backup: Callable) -> None:
     exit_code, _ = run_backup({})
     assert exit_code == 0
     assert BACKUP_DIR.is_dir()
-    assert sorted(f.name for f in BACKUP_DIR.glob("*")) == [
+    assert sorted(normalize_container_name(f.name) for f in BACKUP_DIR.glob("*")) == [
         "docker-db-auto-backup-mariadb-1.sql",
         "docker-db-auto-backup-mysql-1.sql",
         "docker-db-auto-backup-psql-1.sql",
