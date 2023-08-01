@@ -6,8 +6,8 @@ export PATH=env/bin:${PATH}
 
 set -x
 
-black db-auto-backup.py --check
+black db-auto-backup.py tests --check
 
-ruff check db-auto-backup.py
+ruff check db-auto-backup.py tests
 
-mypy db-auto-backup.py
+mypy db-auto-backup.py tests

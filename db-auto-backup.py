@@ -53,28 +53,28 @@ def temp_backup_file_name() -> str:
     return ".auto-backup-" + secrets.token_hex(4)
 
 
-def open_file_compressed(file_path: Path) -> IO[bytes]:
-    if COMPRESSION == "gzip":
+def open_file_compressed(file_path: Path, algorithm: str) -> IO[bytes]:
+    if algorithm == "gzip":
         return gzip.open(file_path, mode="wb")  # type:ignore
-    elif COMPRESSION in ["lzma", "xz"]:
+    elif algorithm in ["lzma", "xz"]:
         return lzma.open(file_path, mode="wb")
-    elif COMPRESSION == "bz2":
+    elif algorithm == "bz2":
         return bz2.open(file_path, mode="wb")
-    elif COMPRESSION == "plain":
+    elif algorithm == "plain":
         return file_path.open(mode="wb")
-    raise ValueError(f"Unknown compression method {COMPRESSION}")
+    raise ValueError(f"Unknown compression method {algorithm}")
 
 
-def get_compressed_file_extension() -> str:
-    if COMPRESSION == "gzip":
+def get_compressed_file_extension(algorithm: str) -> str:
+    if algorithm == "gzip":
         return ".gz"
-    elif COMPRESSION in ["lzma", "xz"]:
+    elif algorithm in ["lzma", "xz"]:
         return ".xz"
-    elif COMPRESSION == "bz2":
+    elif algorithm == "bz2":
         return ".bz2"
-    elif COMPRESSION == "plain":
+    elif algorithm == "plain":
         return ""
-    raise ValueError(f"Unknown compression method {COMPRESSION}")
+    raise ValueError(f"Unknown compression method {algorithm}")
 
 
 def backup_psql(container: Container) -> str:
@@ -154,14 +154,16 @@ def backup(now: datetime) -> None:
 
         backup_file = (
             BACKUP_DIR
-            / f"{container.name}.{backup_provider.file_extension}{get_compressed_file_extension()}"
+            / f"{container.name}.{backup_provider.file_extension}{get_compressed_file_extension(COMPRESSION)}"
         )
         backup_temp_file_path = BACKUP_DIR / temp_backup_file_name()
 
         backup_command = backup_provider.backup_method(container)
         _, output = container.exec_run(backup_command, stream=True, demux=True)
 
-        with open_file_compressed(backup_temp_file_path) as backup_temp_file:
+        with open_file_compressed(
+            backup_temp_file_path, COMPRESSION
+        ) as backup_temp_file:
             with tqdm.wrapattr(
                 backup_temp_file,
                 method="write",

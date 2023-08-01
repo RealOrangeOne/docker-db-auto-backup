@@ -3,6 +3,7 @@ services:
     build:
       context: .
     restart: unless-stopped
+    command: "sleep infinity"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - ./backups:/var/backups
