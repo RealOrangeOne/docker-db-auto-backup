@@ -10,7 +10,7 @@ BACKUP_DIR = Path.cwd() / "backups"
 @pytest.fixture
 def run_backup(request: Any) -> Callable:
     docker_client = docker.from_env()
-    backup_container = docker_client.containers.get("docker-db-auto-backup-backup-1")
+    backup_container = docker_client.containers.get("docker-db-auto-backup")
 
     def clean_backups() -> None:
         # HACK: Remove files from inside container to avoid permissions issue
