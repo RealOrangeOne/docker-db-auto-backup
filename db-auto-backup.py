@@ -35,6 +35,16 @@ def get_container_env(container: Container) -> Dict[str, Optional[str]]:
     return dict(dotenv_values(stream=StringIO(env_output.decode())))
 
 
+def binary_exists_in_container(container: Container, binary_name: str) -> bool:
+    """
+    Get all environment variables from a container.
+
+    Variables at runtime, rather than those defined in the container.
+    """
+    exit_code, _ = container.exec_run(["which", binary_name])
+    return exit_code == 0
+
+
 def temp_backup_file_name() -> str:
     """
     Create a temporary file to save backups to,
@@ -84,7 +94,12 @@ def backup_mysql(container: Container) -> str:
     else:
         raise ValueError(f"Unable to find MySQL root password for {container.name}")
 
-    return f"bash -c 'mysqldump {auth} --all-databases'"
+    if binary_exists_in_container(container, "mariadb-dump"):
+        backup_binary = "mariadb-dump"
+    else:
+        backup_binary = "mysqldump"
+
+    return f"bash -c '{backup_binary} {auth} --all-databases'"
 
 
 def backup_redis(container: Container) -> str:
