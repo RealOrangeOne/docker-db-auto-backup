@@ -61,7 +61,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Build and push containers
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           push: ${{ github.ref == 'refs/heads/master' }}
           platforms: linux/arm,linux/amd64,linux/arm64/v8
