@@ -54,6 +54,8 @@ def temp_backup_file_name() -> str:
 
 
 def open_file_compressed(file_path: Path, algorithm: str) -> IO[bytes]:
+    file_path.touch(mode=0o600)
+
     if algorithm == "gzip":
         return gzip.open(file_path, mode="wb")  # type:ignore
     elif algorithm in ["lzma", "xz"]:
