@@ -22,4 +22,4 @@ done
 pytest -v
 
 echo "> Clean up..."
-docker-compose down
+docker-compose down -t 3
