@@ -19,7 +19,7 @@ Mount your backup directory as `/var/backups` (or override `$BACKUP_DIR`). Backu
 
 Backups run daily at midnight. To change this, add a cron-style schedule to `$SCHEDULE`. For more information on the format of the cron strings, please see the [croniter documentation on PyPI](https://pypi.org/project/croniter/).
 
-Additionally, there is support for [healthchecks.io](https://healthchecks.io). `$HEALTHCHECKS_ID` can be used to specify the id to ping. If you're using a self-hosted instance, set `$HEALTHCHECKS_HOST`.
+Additionally, there is support for [healthchecks.io](https://healthchecks.io) and [Uptime Kuma](https://github.com/louislam/uptime-kuma/) for monitoring purposes. `$HEALTHCHECKS_ID` can be used to specify the id to ping. If you're using a self-hosted instance, set `$HEALTHCHECKS_HOST`. To use the generated URL by the Monitor Type `Push` in Uptime Kuma, set `$UPTIME_KUMA_URL`.
 
 Files are backed up uncompressed by default, on the assumption a snapshotting or native compressed filesystem is being used (eg ZFS). To enable compression, set `$COMPRESSION` to one of the supported algorithms:
 
