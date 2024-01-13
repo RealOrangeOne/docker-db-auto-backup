@@ -195,7 +195,7 @@ def backup(now: datetime) -> None:
         ).raise_for_status()
 
     if uptime_kuma_url := os.environ.get("UPTIME_KUMA_URL"):
-        requests.get(uptime_kuma_url)      
+        requests.get(uptime_kuma_url).raise_for_status()      
 
 
 if __name__ == "__main__":
