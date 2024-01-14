@@ -194,6 +194,9 @@ def backup(now: datetime) -> None:
             data="\n".join(backed_up_containers),
         ).raise_for_status()
 
+    if uptime_kuma_url := os.environ.get("UPTIME_KUMA_URL"):
+        requests.get(uptime_kuma_url).raise_for_status()
+
 
 if __name__ == "__main__":
     if os.environ.get("SCHEDULE"):
