@@ -19,7 +19,13 @@ Mount your backup directory as `/var/backups` (or override `$BACKUP_DIR`). Backu
 
 Backups run daily at midnight. To change this, add a cron-style schedule to `$SCHEDULE`. For more information on the format of the cron strings, please see the [croniter documentation on PyPI](https://pypi.org/project/croniter/).
 
-Additionally, there is support for [healthchecks.io](https://healthchecks.io) and [Uptime Kuma](https://github.com/louislam/uptime-kuma/) for monitoring purposes. `$HEALTHCHECKS_ID` can be used to specify the id to ping. If you're using a self-hosted instance, set `$HEALTHCHECKS_HOST`. To use the generated URL by the Monitor Type `Push` in Uptime Kuma, set `$UPTIME_KUMA_URL`.
+### Success hooks
+
+When backups are completed successfully, a request can be made to the URL defined in `$SUCCESS_HOOK_URL`. By default, a `GET` request is made. To include logs, also set `$INCLUDE_LOGS` to a non-empty value, which sends a `POST` request instead with helpful details in the body.
+
+Note: Previous versions also supported `$HEALTHCHECKS_ID`, `$HEALTHCHECKS_HOST` and `$UPTIME_KUMA_URL`, or native support for [healthchecks.io](https://healthchecks.io) and [Uptime Kuma](https://github.com/louislam/uptime-kuma/) respectively. These are all still supported, however `$SUCCESS_HOOK_URL` is preferred.
+
+### Compression
 
 Files are backed up uncompressed by default, on the assumption a snapshotting or native compressed filesystem is being used (eg ZFS). To enable compression, set `$COMPRESSION` to one of the supported algorithms:
 
@@ -41,7 +47,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./backups:/var/backups
     environment:
-      - HEALTHCHECKS_ID=id
+      - SUCCESS_HOOK_URL=https://hc-ping.com/1234
+      - INCLUDE_LOGS=true
 ```
 
 ### Oneshot

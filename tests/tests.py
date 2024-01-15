@@ -69,3 +69,24 @@ def test_backup_runs_compressed(
 )
 def test_compressed_file_extension(algorithm: str, extension: str) -> None:
     assert db_auto_backup.get_compressed_file_extension(algorithm) == extension
+
+
+def test_success_hook_url(monkeypatch: Any) -> None:
+    monkeypatch.setenv("SUCCESS_HOOK_URL", "https://example.com")
+    assert db_auto_backup.get_success_hook_url() == "https://example.com"
+
+
+def test_healthchecks_success_hook_url(monkeypatch: Any) -> None:
+    monkeypatch.setenv("HEALTHCHECKS_ID", "1234")
+    assert db_auto_backup.get_success_hook_url() == "https://hc-ping.com/1234"
+
+
+def test_healthchecks_success_hook_url_custom_host(monkeypatch: Any) -> None:
+    monkeypatch.setenv("HEALTHCHECKS_ID", "1234")
+    monkeypatch.setenv("HEALTHCHECKS_HOST", "my-healthchecks.com")
+    assert db_auto_backup.get_success_hook_url() == "https://my-healthchecks.com/1234"
+
+
+def test_uptime_kuma_success_hook_url(monkeypatch: Any) -> None:
+    monkeypatch.setenv("UPTIME_KUMA_URL", "https://uptime-kuma.com")
+    assert db_auto_backup.get_success_hook_url() == "https://uptime-kuma.com"

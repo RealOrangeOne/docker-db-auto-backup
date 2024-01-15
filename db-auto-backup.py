@@ -79,6 +79,20 @@ def get_compressed_file_extension(algorithm: str) -> str:
     raise ValueError(f"Unknown compression method {algorithm}")
 
 
+def get_success_hook_url() -> Optional[str]:
+    if success_hook_url := os.environ.get("SUCCESS_HOOK_URL"):
+        return success_hook_url
+
+    if healthchecks_id := os.environ.get("HEALTHCHECKS_ID"):
+        healthchecks_host = os.environ.get("HEALTHCHECKS_HOST", "hc-ping.com")
+        return f"https://{healthchecks_host}/{healthchecks_id}"
+
+    if uptime_kuma_url := os.environ.get("UPTIME_KUMA_URL"):
+        return uptime_kuma_url
+
+    return None
+
+
 def backup_psql(container: Container) -> str:
     env = get_container_env(container)
     user = env.get("POSTGRES_USER", "postgres")
@@ -131,6 +145,7 @@ BACKUP_DIR = Path(os.environ.get("BACKUP_DIR", "/var/backups"))
 SCHEDULE = os.environ.get("SCHEDULE", "0 0 * * *")
 SHOW_PROGRESS = sys.stdout.isatty()
 COMPRESSION = os.environ.get("COMPRESSION", "plain")
+INCLUDE_LOGS = bool(os.environ.get("INCLUDE_LOGS"))
 
 
 def get_backup_provider(container_names: Sequence[str]) -> Optional[BackupProvider]:
@@ -187,15 +202,15 @@ def backup(now: datetime) -> None:
     duration = (datetime.now() - now).total_seconds()
     print(f"Backup complete in {duration:.2f} seconds.")
 
-    if healthchecks_id := os.environ.get("HEALTHCHECKS_ID"):
-        healthchecks_host = os.environ.get("HEALTHCHECKS_HOST", "hc-ping.com")
-        requests.post(
-            f"https://{healthchecks_host}/{healthchecks_id}",
-            data="\n".join(backed_up_containers),
-        ).raise_for_status()
+    if success_hook_url := get_success_hook_url():
+        if INCLUDE_LOGS:
+            response = requests.post(
+                success_hook_url, data="\n".join(backed_up_containers)
+            )
+        else:
+            response = requests.get(success_hook_url)
 
-    if uptime_kuma_url := os.environ.get("UPTIME_KUMA_URL"):
-        requests.get(uptime_kuma_url).raise_for_status()
+        response.raise_for_status()
 
 
 if __name__ == "__main__":
