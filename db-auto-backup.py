@@ -128,7 +128,7 @@ def backup_redis(container: Container) -> str:
 
 BACKUP_PROVIDERS: list[BackupProvider] = [
     BackupProvider(
-        patterns=["postgres", "pgvecto*", "*postgres*"], backup_method=backup_psql, file_extension="sql"
+        patterns=["postgres", "*pgvecto*", "*postgres*"], backup_method=backup_psql, file_extension="sql"
     ),
     BackupProvider(
         patterns=["mysql", "mariadb", "*/linuxserver/mariadb"],
