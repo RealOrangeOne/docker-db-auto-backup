@@ -128,7 +128,9 @@ def backup_redis(container: Container) -> str:
 
 BACKUP_PROVIDERS: list[BackupProvider] = [
     BackupProvider(
-        patterns=["postgres", "tensorchord/pgvecto-rs", "nextcloud/aio-postgresql"], backup_method=backup_psql, file_extension="sql"
+        patterns=["postgres", "tensorchord/pgvecto-rs", "nextcloud/aio-postgresql"],
+        backup_method=backup_psql,
+        file_extension="sql",
     ),
     BackupProvider(
         patterns=["mysql", "mariadb", "*/linuxserver/mariadb"],
