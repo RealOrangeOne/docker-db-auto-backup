@@ -2,6 +2,7 @@ from importlib.machinery import SourceFileLoader
 from importlib.util import module_from_spec, spec_from_loader
 from pathlib import Path
 from typing import Any, Callable
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -90,3 +91,18 @@ def test_healthchecks_success_hook_url_custom_host(monkeypatch: Any) -> None:
 def test_uptime_kuma_success_hook_url(monkeypatch: Any) -> None:
     monkeypatch.setenv("UPTIME_KUMA_URL", "https://uptime-kuma.com")
     assert db_auto_backup.get_success_hook_url() == "https://uptime-kuma.com"
+
+
+@pytest.mark.parametrize(
+    "tag,name",
+    [
+        ("postgres:14-alpine", "postgres"),
+        ("docker.io/postgres:14-alpine", "postgres"),
+        ("ghcr.io/realorangeone/db-auto-backup:latest", "realorangeone/db-auto-backup"),
+        ("theorangeone/db-auto-backup:latest:latest", "theorangeone/db-auto-backup"),
+    ],
+)
+def test_get_container_names(tag: str, name: str) -> None:
+    container = MagicMock()
+    container.image.tags = [tag]
+    assert db_auto_backup.get_container_names(container) == {name}

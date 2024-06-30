@@ -9,7 +9,7 @@ import sys
 from datetime import datetime
 from io import StringIO
 from pathlib import Path
-from typing import IO, Callable, Dict, NamedTuple, Optional, Sequence
+from typing import IO, Callable, Dict, Iterable, NamedTuple, Optional
 
 import docker
 import pycron
@@ -150,13 +150,22 @@ COMPRESSION = os.environ.get("COMPRESSION", "plain")
 INCLUDE_LOGS = bool(os.environ.get("INCLUDE_LOGS"))
 
 
-def get_backup_provider(container_names: Sequence[str]) -> Optional[BackupProvider]:
+def get_backup_provider(container_names: Iterable[str]) -> Optional[BackupProvider]:
     for name in container_names:
         for provider in BACKUP_PROVIDERS:
             if any(fnmatch.fnmatch(name, pattern) for pattern in provider.patterns):
                 return provider
 
     return None
+
+
+def get_container_names(container: Container) -> Iterable[str]:
+    names = set()
+    for tag in container.image.tags:
+        registry, image = docker.auth.resolve_repository_name(tag)
+        image, tag_name = image.split(":", 1)
+        names.add(image)
+    return names
 
 
 @pycron.cron(SCHEDULE)
@@ -166,7 +175,7 @@ def backup(now: datetime) -> None:
     backed_up_containers = []
 
     for container in docker_client.containers.list():
-        container_names = [tag.rsplit(":", 1)[0] for tag in container.image.tags]
+        container_names = get_container_names(container)
         backup_provider = get_backup_provider(container_names)
         if backup_provider is None:
             continue
