@@ -1,6 +1,6 @@
 docker==7.1.0
 python-dotenv==1.0.0
-tqdm==4.66.2
+tqdm==4.66.5
 requests
 
 # Use an unreleased version to support non-async jobs
