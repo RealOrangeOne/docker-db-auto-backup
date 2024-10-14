@@ -170,11 +170,16 @@ def get_container_names(container: Container) -> Iterable[str]:
 
 @pycron.cron(SCHEDULE)
 def backup(now: datetime) -> None:
+    print("Starting backup...")
+
     docker_client = docker.from_env()
+    containers = docker_client.containers.list()
 
     backed_up_containers = []
 
-    for container in docker_client.containers.list():
+    print(f"Found {len(containers)} containers.")
+
+    for container in containers:
         container_names = get_container_names(container)
         backup_provider = get_backup_provider(container_names)
         if backup_provider is None:
@@ -211,7 +216,9 @@ def backup(now: datetime) -> None:
         backed_up_containers.append(container.name)
 
     duration = (datetime.now() - now).total_seconds()
-    print(f"Backup complete in {duration:.2f} seconds.")
+    print(
+        f"Backup of {len(backed_up_containers)} containers complete in {duration:.2f} seconds."
+    )
 
     if success_hook_url := get_success_hook_url():
         if INCLUDE_LOGS:
