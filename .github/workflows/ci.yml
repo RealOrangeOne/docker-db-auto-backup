@@ -27,7 +27,7 @@ jobs:
     - name: Install Python dependencies
       run: pip install -r dev-requirements.txt
     - name: Fetch containers
-      run: docker-compose build && docker-compose pull
+      run: docker compose build && docker compose pull
     - name: Run test
       run: ./scripts/test.sh
 
