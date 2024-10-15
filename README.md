@@ -51,6 +51,27 @@ services:
       - INCLUDE_LOGS=true
 ```
 
+#### Running in Docker Swarm
+To run the backup service in Docker Swarm, you should configure it as a global service. This ensures that the backup process runs on each node in the Swarm and backs up all matching containers on the local node.
+```yml
+version: "3.9"  # Use version 3.9 to support Swarm deploy settings
+
+services:
+  backup:
+    image: ghcr.io/realorangeone/db-auto-backup:latest
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./backups:/var/backups
+    environment:
+      - SUCCESS_HOOK_URL=https://hc-ping.com/1234
+      - INCLUDE_LOGS=true
+    deploy:
+      mode: global  # Run one instance of the service on each node
+      restart_policy:
+        condition: on-failure  # Restart on failure to ensure resilience
+```
+
 ### Oneshot
 
 You may want to use this container to run backups just once, rather than on a schedule. To achieve this, set `$SCHEDULE` to an empty string, and the backup will run just once. This may be useful in conjunction with an external scheduler.

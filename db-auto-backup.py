@@ -160,12 +160,61 @@ def get_backup_provider(container_names: Iterable[str]) -> Optional[BackupProvid
 
 
 def get_container_names(container: Container) -> Iterable[str]:
+    """
+    Extract names for a container from image tags or fallback to container name.
+    """
     names = set()
-    for tag in container.image.tags:
-        registry, image = docker.auth.resolve_repository_name(tag)
-        image, tag_name = image.split(":", 1)
-        names.add(image)
+
+    if container.image.tags:
+        for tag in container.image.tags:
+            image_name = tag.split(":")[0].split("@")[0]
+            image_name = image_name.split("/")[-1]
+            names.add(image_name)
+
+    if not names and container.attrs.get("Config", {}).get("Image"):
+        image_name = container.attrs["Config"]["Image"].split(":")[0].split("@")[0]
+        image_name = image_name.split("/")[-1]
+        names.add(image_name)
+
+    if not names and container.name:
+        names.add(container.name)
+
     return names
+
+def is_swarm_mode() -> bool:
+    docker_client = docker.from_env()
+    info = docker_client.info()
+    return info.get("Swarm", {}).get("LocalNodeState") == "active"
+
+
+def get_local_node_id() -> str:
+    docker_client = docker.from_env()
+    info = docker_client.info()
+    return info["Swarm"]["NodeID"]
+
+
+def get_local_node_tasks() -> list:
+    docker_client = docker.from_env()
+    local_node_id = get_local_node_id()
+    services = docker_client.services.list()
+
+    local_tasks = []
+    for service in services:
+        tasks = service.tasks()
+        for task in tasks:
+            if task["NodeID"] == local_node_id and task["Status"]["State"] == "running":
+                local_tasks.append(task)
+
+    return local_tasks
+
+
+def create_backup_file_name(container: Container, backup_provider: BackupProvider) -> Path:
+    """
+    Create a backup file name with a timestamp prefix and the container name.
+    """
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    container_name = container.name
+    return BACKUP_DIR / f"{timestamp}_{container_name}.{backup_provider.file_extension}{get_compressed_file_extension(COMPRESSION)}"
 
 
 @pycron.cron(SCHEDULE)
@@ -173,57 +222,92 @@ def backup(now: datetime) -> None:
     print("Starting backup...")
 
     docker_client = docker.from_env()
-    containers = docker_client.containers.list()
 
-    backed_up_containers = []
+    if is_swarm_mode():
+        print("Running in Swarm mode, adjusting container lookup...")
+        tasks = get_local_node_tasks()
+        backed_up_services = []
 
-    print(f"Found {len(containers)} containers.")
+        for task in tasks:
+            task_container_id = task['Status']['ContainerStatus']['ContainerID']
+            try:
+                container = docker_client.containers.get(task_container_id)
+            except docker.errors.NotFound:
+                continue
 
-    for container in containers:
-        container_names = get_container_names(container)
-        backup_provider = get_backup_provider(container_names)
-        if backup_provider is None:
-            continue
+            container_names = get_container_names(container)
+            backup_provider = get_backup_provider(container_names)
+            
+            if backup_provider is None:
+                continue
 
-        backup_file = (
-            BACKUP_DIR
-            / f"{container.name}.{backup_provider.file_extension}{get_compressed_file_extension(COMPRESSION)}"
+            backup_file = create_backup_file_name(container, backup_provider)
+            backup_temp_file_path = BACKUP_DIR / temp_backup_file_name()
+
+            backup_command = backup_provider.backup_method(container)
+            _, output = container.exec_run(backup_command, stream=True, demux=True)
+
+            with open_file_compressed(
+                backup_temp_file_path, COMPRESSION
+            ) as backup_temp_file:
+                with tqdm.wrapattr(
+                    backup_temp_file,
+                    method="write",
+                    desc=task["ServiceID"],
+                    disable=not SHOW_PROGRESS,
+                ) as f:
+                    for stdout, _ in output:
+                        if stdout is None:
+                            continue
+                        f.write(stdout)
+
+            os.replace(backup_temp_file_path, backup_file)
+            backed_up_services.append(container.name)
+
+        duration = (datetime.now() - now).total_seconds()
+        print(f"Backup of {len(backed_up_services)} services complete in {duration:.2f} seconds.")
+    else:
+        containers = docker_client.containers.list()
+        backed_up_containers = []
+
+        for container in containers:
+            container_names = get_container_names(container)
+            backup_provider = get_backup_provider(container_names)
+
+            if backup_provider is None:
+                continue
+
+            backup_file = create_backup_file_name(container, backup_provider)
+            backup_temp_file_path = BACKUP_DIR / temp_backup_file_name()
+
+            backup_command = backup_provider.backup_method(container)
+            _, output = container.exec_run(backup_command, stream=True, demux=True)
+
+            with open_file_compressed(
+                backup_temp_file_path, COMPRESSION
+            ) as backup_temp_file:
+                with tqdm.wrapattr(
+                    backup_temp_file,
+                    method="write",
+                    desc=container.name,
+                    disable=not SHOW_PROGRESS,
+                ) as f:
+                    for stdout, _ in output:
+                        if stdout is None:
+                            continue
+                        f.write(stdout)
+
+            os.replace(backup_temp_file_path, backup_file)
+            backed_up_containers.append(container.name)
+        duration = (datetime.now() - now).total_seconds()
+        print(
+            f"Backup of {len(backed_up_containers)} containers complete in {duration:.2f} seconds."
         )
-        backup_temp_file_path = BACKUP_DIR / temp_backup_file_name()
-
-        backup_command = backup_provider.backup_method(container)
-        _, output = container.exec_run(backup_command, stream=True, demux=True)
-
-        with open_file_compressed(
-            backup_temp_file_path, COMPRESSION
-        ) as backup_temp_file:
-            with tqdm.wrapattr(
-                backup_temp_file,
-                method="write",
-                desc=container.name,
-                disable=not SHOW_PROGRESS,
-            ) as f:
-                for stdout, _ in output:
-                    if stdout is None:
-                        continue
-                    f.write(stdout)
-
-        os.replace(backup_temp_file_path, backup_file)
-
-        if not SHOW_PROGRESS:
-            print(container.name)
-
-        backed_up_containers.append(container.name)
-
-    duration = (datetime.now() - now).total_seconds()
-    print(
-        f"Backup of {len(backed_up_containers)} containers complete in {duration:.2f} seconds."
-    )
 
     if success_hook_url := get_success_hook_url():
         if INCLUDE_LOGS:
             response = requests.post(
-                success_hook_url, data="\n".join(backed_up_containers)
+                success_hook_url, data="\n".join(backed_up_containers or backed_up_services)
             )
         else:
             response = requests.get(success_hook_url)
