@@ -133,7 +133,7 @@ BACKUP_PROVIDERS: list[BackupProvider] = [
         file_extension="sql",
     ),
     BackupProvider(
-        patterns=["mysql", "mariadb", "*/linuxserver/mariadb"],
+        patterns=["mysql", "mariadb", "linuxserver/mariadb"],
         backup_method=backup_mysql,
         file_extension="sql",
     ),
