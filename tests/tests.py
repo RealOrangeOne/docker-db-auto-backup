@@ -101,6 +101,8 @@ def test_uptime_kuma_success_hook_url(monkeypatch: Any) -> None:
         ("ghcr.io/realorangeone/db-auto-backup:latest", "realorangeone/db-auto-backup"),
         ("theorangeone/db-auto-backup:latest:latest", "theorangeone/db-auto-backup"),
         ("lscr.io/linuxserver/mariadb:latest", "linuxserver/mariadb"),
+        ("docker.io/library/postgres:14-alpine", "postgres"),
+        ("library/postgres:14-alpine", "postgres"),
     ],
 )
 def test_get_container_names(tag: str, name: str) -> None:

@@ -169,6 +169,11 @@ def get_container_names(container: Container) -> Iterable[str]:
     names = set()
     for tag in container.image.tags:
         registry, image = docker.auth.resolve_repository_name(tag)
+
+        # HACK: Strip "library" from official images
+        if registry == docker.auth.INDEX_NAME:
+            image = image.removeprefix("library/")
+
         image, tag_name = image.split(":", 1)
         names.add(image)
     return names
