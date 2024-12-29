@@ -20,6 +20,7 @@ from tqdm.auto import tqdm
 
 
 class BackupProvider(NamedTuple):
+    name: str
     patterns: list[str]
     backup_method: Callable[[Container], str]
     file_extension: str
@@ -128,17 +129,22 @@ def backup_redis(container: Container) -> str:
 
 BACKUP_PROVIDERS: list[BackupProvider] = [
     BackupProvider(
+        name="postgres",
         patterns=["postgres", "tensorchord/pgvecto-rs", "nextcloud/aio-postgresql"],
         backup_method=backup_psql,
         file_extension="sql",
     ),
     BackupProvider(
+        name="mysql",
         patterns=["mysql", "mariadb", "linuxserver/mariadb"],
         backup_method=backup_mysql,
         file_extension="sql",
     ),
     BackupProvider(
-        patterns=["redis"], backup_method=backup_redis, file_extension="rdb"
+        name="redis",
+        patterns=["redis"],
+        backup_method=backup_redis,
+        file_extension="rdb",
     ),
 ]
 
@@ -194,13 +200,15 @@ def backup(now: datetime) -> None:
         backup_command = backup_provider.backup_method(container)
         _, output = container.exec_run(backup_command, stream=True, demux=True)
 
+        description = f"{container.name} ({backup_provider.name})"
+
         with open_file_compressed(
             backup_temp_file_path, COMPRESSION
         ) as backup_temp_file:
             with tqdm.wrapattr(
                 backup_temp_file,
                 method="write",
-                desc=container.name,
+                desc=description,
                 disable=not SHOW_PROGRESS,
             ) as f:
                 for stdout, _ in output:
@@ -211,7 +219,7 @@ def backup(now: datetime) -> None:
         os.replace(backup_temp_file_path, backup_file)
 
         if not SHOW_PROGRESS:
-            print(container.name)
+            print(description)
 
         backed_up_containers.append(container.name)
 

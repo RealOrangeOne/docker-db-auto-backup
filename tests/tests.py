@@ -100,9 +100,29 @@ def test_uptime_kuma_success_hook_url(monkeypatch: Any) -> None:
         ("docker.io/postgres:14-alpine", "postgres"),
         ("ghcr.io/realorangeone/db-auto-backup:latest", "realorangeone/db-auto-backup"),
         ("theorangeone/db-auto-backup:latest:latest", "theorangeone/db-auto-backup"),
+        ("lscr.io/linuxserver/mariadb:latest", "linuxserver/mariadb"),
     ],
 )
 def test_get_container_names(tag: str, name: str) -> None:
     container = MagicMock()
     container.image.tags = [tag]
     assert db_auto_backup.get_container_names(container) == {name}
+
+
+@pytest.mark.parametrize(
+    "container_name,name",
+    [
+        ("postgres", "postgres"),
+        ("mysql", "mysql"),
+        ("mariadb", "mysql"),
+        ("linuxserver/mariadb", "mysql"),
+        ("tensorchord/pgvecto-rs", "postgres"),
+        ("nextcloud/aio-postgresql", "postgres"),
+        ("redis", "redis"),
+    ],
+)
+def test_get_backup_provider(container_name: str, name: str) -> None:
+    provider = db_auto_backup.get_backup_provider([container_name])
+
+    assert provider is not None
+    assert provider.name == name
