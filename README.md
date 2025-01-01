@@ -6,9 +6,8 @@ A script to automatically back up all databases running under docker on a host, 
 
 ## Supported databases
 
-- MariaDB
-- MySQL
-- PostgreSQL (including [TimescaleDB](https://www.timescale.com/))
+- MySQL (including MariaDB and LSIO's MariaDB)
+- PostgreSQL (including [TimescaleDB](https://www.timescale.com/), [pgvecto.rs](https://github.com/tensorchord/pgvecto.rs), and Nextcloud's [AIO](https://github.com/nextcloud/all-in-one))
 - Redis
 
 ## Installation
