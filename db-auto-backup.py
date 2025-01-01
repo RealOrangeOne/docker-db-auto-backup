@@ -130,7 +130,12 @@ def backup_redis(container: Container) -> str:
 BACKUP_PROVIDERS: list[BackupProvider] = [
     BackupProvider(
         name="postgres",
-        patterns=["postgres", "tensorchord/pgvecto-rs", "nextcloud/aio-postgresql"],
+        patterns=[
+            "postgres",
+            "tensorchord/pgvecto-rs",
+            "nextcloud/aio-postgresql",
+            "timescale/timescaledb",
+        ],
         backup_method=backup_psql,
         file_extension="sql",
     ),

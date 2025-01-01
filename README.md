@@ -8,7 +8,7 @@ A script to automatically back up all databases running under docker on a host, 
 
 - MariaDB
 - MySQL
-- PostgreSQL
+- PostgreSQL (including [TimescaleDB](https://www.timescale.com/))
 - Redis
 
 ## Installation
