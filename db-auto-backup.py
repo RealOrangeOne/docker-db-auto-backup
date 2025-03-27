@@ -97,11 +97,15 @@ def get_success_hook_url() -> Optional[str]:
 def backup_psql(container: Container) -> str:
     env = get_container_env(container)
     user = env.get("POSTGRES_USER", "postgres")
-    return f"pg_dumpall -U {user}"
+    extra = EXTRA_POSTGRESQL
+    if CLEAN:
+        extra += " --clean --if-exists"
+    return f"pg_dumpall -U {user} {extra}"
 
 
 def backup_mysql(container: Container) -> str:
     env = get_container_env(container)
+    extra = EXTRA_MYSQL
 
     # The mariadb container supports both
     if "MARIADB_ROOT_PASSWORD" in env:
@@ -116,7 +120,10 @@ def backup_mysql(container: Container) -> str:
     else:
         backup_binary = "mysqldump"
 
-    return f"bash -c '{backup_binary} {auth} --all-databases'"
+    if CLEAN:
+        extra += " --add-drop-database --add-drop-table --add-drop-trigger"
+
+    return f"bash -c '{backup_binary} {auth} --all-databases {extra}'"
 
 
 def backup_redis(container: Container) -> str:
@@ -124,6 +131,7 @@ def backup_redis(container: Container) -> str:
     Note: `SAVE` command locks the database, which isn't ideal.
     Hopefully the commit is fast enough!
     """
+
     return "sh -c 'redis-cli SAVE > /dev/null && cat /data/dump.rdb'"
 
 
@@ -159,7 +167,9 @@ SCHEDULE = os.environ.get("SCHEDULE", "0 0 * * *")
 SHOW_PROGRESS = sys.stdout.isatty()
 COMPRESSION = os.environ.get("COMPRESSION", "plain")
 INCLUDE_LOGS = bool(os.environ.get("INCLUDE_LOGS"))
-
+CLEAN = bool(os.environ.get("CLEAN", False))
+EXTRA_PSQL = os.environ.get("EXTRA_POSTGRESQL", "")
+EXTRA_MYSQL = os.environ.get("EXTRA_MYSQL", "")
 
 def get_backup_provider(container_names: Iterable[str]) -> Optional[BackupProvider]:
     for name in container_names:
