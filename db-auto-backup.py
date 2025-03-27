@@ -136,6 +136,7 @@ BACKUP_PROVIDERS: list[BackupProvider] = [
             "nextcloud/aio-postgresql",
             "timescale/timescaledb",
             "pgvector/pgvector",
+            "pgautoupgrade/pgautoupgrade",
         ],
         backup_method=backup_psql,
         file_extension="sql",

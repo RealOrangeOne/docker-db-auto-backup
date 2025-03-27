@@ -103,6 +103,7 @@ def test_uptime_kuma_success_hook_url(monkeypatch: Any) -> None:
         ("lscr.io/linuxserver/mariadb:latest", "linuxserver/mariadb"),
         ("docker.io/library/postgres:14-alpine", "postgres"),
         ("library/postgres:14-alpine", "postgres"),
+        ("pgautoupgrade/pgautoupgrade:15-alpine", "pgautoupgrade/pgautoupgrade"),
     ],
 )
 def test_get_container_names(tag: str, name: str) -> None:
@@ -121,6 +122,7 @@ def test_get_container_names(tag: str, name: str) -> None:
         ("tensorchord/pgvecto-rs", "postgres"),
         ("nextcloud/aio-postgresql", "postgres"),
         ("redis", "redis"),
+        ("pgautoupgrade/pgautoupgrade", "postgres"),
     ],
 )
 def test_get_backup_provider(container_name: str, name: str) -> None:
