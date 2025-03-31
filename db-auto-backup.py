@@ -97,15 +97,17 @@ def get_success_hook_url() -> Optional[str]:
 def backup_psql(container: Container) -> str:
     env = get_container_env(container)
     user = env.get("POSTGRES_USER", "postgres")
-    extra = EXTRA_POSTGRESQL
-    if CLEAN:
+    extra = os.environ.get("EXTRA_POSTGRESQL", "")
+    if bool(os.environ.get("CLEAN")):
+        print("CLEAN is set, using --clean --if-exists")
         extra += " --clean --if-exists"
+    print(f"Using {extra} for backup")
     return f"pg_dumpall -U {user} {extra}"
 
 
 def backup_mysql(container: Container) -> str:
     env = get_container_env(container)
-    extra = EXTRA_MYSQL
+    extra = os.environ.get("EXTRA_MYSQL", "")
 
     # The mariadb container supports both
     if "MARIADB_ROOT_PASSWORD" in env:
@@ -120,7 +122,7 @@ def backup_mysql(container: Container) -> str:
     else:
         backup_binary = "mysqldump"
 
-    if CLEAN:
+    if bool(os.environ.get("CLEAN")):
         extra += " --add-drop-database --add-drop-table --add-drop-trigger"
 
     return f"bash -c '{backup_binary} {auth} --all-databases {extra}'"
@@ -170,6 +172,7 @@ INCLUDE_LOGS = bool(os.environ.get("INCLUDE_LOGS"))
 CLEAN = bool(os.environ.get("CLEAN", False))
 EXTRA_PSQL = os.environ.get("EXTRA_POSTGRESQL", "")
 EXTRA_MYSQL = os.environ.get("EXTRA_MYSQL", "")
+
 
 def get_backup_provider(container_names: Iterable[str]) -> Optional[BackupProvider]:
     for name in container_names:
