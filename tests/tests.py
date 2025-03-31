@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Callable
 from unittest.mock import MagicMock
 
+import docker
 import pytest
 
 BACKUP_DIR = Path.cwd() / "backups"
@@ -141,8 +142,12 @@ def test_backup_runs_clean(run_backup: Callable) -> None:
         "docker-db-auto-backup-psql-1.sql",
         "docker-db-auto-backup-redis-1.rdb",
     ]
+    # Hack for having right on files
+    docker_client = docker.from_env()
+    backup_container = docker_client.containers.get("docker-db-auto-backup")
 
     for backup_file in BACKUP_DIR.iterdir():
+        backup_container.exec_run(["chmod", "o+r", f"/var/backups/{backup_file.name}"])
         if "sql" in backup_file.name:
             with open(backup_file, "r") as f:
                 content = f.read()
