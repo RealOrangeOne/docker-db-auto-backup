@@ -128,3 +128,28 @@ def test_get_backup_provider(container_name: str, name: str) -> None:
 
     assert provider is not None
     assert provider.name == name
+
+
+# Have to be run with root privileges to avoid permission issues
+def test_backup_runs_clean(run_backup: Callable) -> None:
+    exit_code, out = run_backup({"CLEAN": "true"})
+    assert exit_code == 0, out
+    assert BACKUP_DIR.is_dir()
+    assert sorted(normalize_container_name(f.name) for f in BACKUP_DIR.iterdir()) == [
+        "docker-db-auto-backup-mariadb-1.sql",
+        "docker-db-auto-backup-mysql-1.sql",
+        "docker-db-auto-backup-psql-1.sql",
+        "docker-db-auto-backup-redis-1.rdb",
+    ]
+
+    for backup_file in BACKUP_DIR.iterdir():
+        if "sql" in backup_file.name:
+            with open(backup_file, "r") as f:
+                content = f.read()
+                if "psql" in backup_file.name:
+                    assert content.find("\nDROP DATABASE") > 0
+                    assert content.find("\nCREATE DATABASE") > 0
+                if "mysql" in backup_file.name or "mariadb" in backup_file.name:
+                    assert content.find("/*!40000 DROP DATABASE IF EXISTS") > 0
+                    assert content.find("CREATE DATABASE /*!32312 IF NOT EXISTS*/ ") > 0
+                    assert content.find("CREATE TABLE IF NOT EXISTS ") > 0
