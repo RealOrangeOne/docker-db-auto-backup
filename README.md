@@ -40,6 +40,14 @@ Files are backed up uncompressed by default, on the assumption a snapshotting or
 - `bz2`
 - `plain` (no compression - the default)
 
+### Clean dumps
+
+`DROP` statements can be automatically added with `$CLEAN=true`.
+
+### Extra parameters !
+
+Fine manage of your dump policies using extra parameters respectively `$EXTRA_MYSQL` & `$EXTRA_POSTGRESQL`.
+
 ### Example `docker-compose.yml`
 
 ```yml
@@ -55,6 +63,7 @@ services:
     environment:
       - SUCCESS_HOOK_URL=https://hc-ping.com/1234
       - INCLUDE_LOGS=true
+      - EXTRA_MYSQL=--comments --dump-date --lock-all-tables 
 ```
 
 ### Oneshot
