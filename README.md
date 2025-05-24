@@ -10,11 +10,11 @@ A script to automatically back up all databases running under docker on a host, 
 - MariaDB
   - [LSIO's MariaDB](https://github.com/linuxserver/docker-mariadb/)
 - PostgreSQL
-  - [TimescaleDB](https://www.timescale.com/)
-  - [pgvecto.rs](https://github.com/tensorchord/pgvecto.rs)
-  - [pgvector](https://github.com/pgvector/pgvector),
-  - Nextcloud's [AIO](https://github.com/nextcloud/all-in-one)
-  - [pgautoupgrade](https://github.com/pgautoupgrade/docker-pgautoupgrade))
+  - [TimescaleDB](https://www.timescale.com/) (`timescale/timescaledb`)
+  - [VectorChord](https://github.com/tensorchord/VectorChord) (`tensorchord/pgvecto-rs`, `tensorchord/vchord-postgres`, `tensorchord/vchord-suite`)
+  - [pgvector](https://github.com/pgvector/pgvector) (`pgvector/pgvector`)
+  - Nextcloud's [AIO](https://github.com/nextcloud/all-in-one) (`nextcloud/aio-postgresql`)
+  - [pgautoupgrade](https://github.com/pgautoupgrade/docker-pgautoupgrade) (`pgautoupgrade/pgautoupgrade`)
 - Redis
 
 ## Installation

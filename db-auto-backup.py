@@ -133,6 +133,8 @@ BACKUP_PROVIDERS: list[BackupProvider] = [
         patterns=[
             "postgres",
             "tensorchord/pgvecto-rs",
+            "tensorchord/vchord-postgres",
+            "tensorchord/vchord-suite",
             "nextcloud/aio-postgresql",
             "timescale/timescaledb",
             "pgvector/pgvector",
