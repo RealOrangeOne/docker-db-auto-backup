@@ -137,6 +137,7 @@ BACKUP_PROVIDERS: list[BackupProvider] = [
             "timescale/timescaledb",
             "pgvector/pgvector",
             "pgautoupgrade/pgautoupgrade",
+            "immich-app/postgres",
         ],
         backup_method=backup_psql,
         file_extension="sql",

@@ -14,7 +14,8 @@ A script to automatically back up all databases running under docker on a host, 
   - [pgvecto.rs](https://github.com/tensorchord/pgvecto.rs)
   - [pgvector](https://github.com/pgvector/pgvector),
   - Nextcloud's [AIO](https://github.com/nextcloud/all-in-one)
-  - [pgautoupgrade](https://github.com/pgautoupgrade/docker-pgautoupgrade))
+  - [pgautoupgrade](https://github.com/pgautoupgrade/docker-pgautoupgrade)
+  - Immich's [Postgres VectorChord](https://ghcr.io/immich-app/postgres)
 - Redis
 
 ## Installation

@@ -104,6 +104,10 @@ def test_uptime_kuma_success_hook_url(monkeypatch: Any) -> None:
         ("docker.io/library/postgres:14-alpine", "postgres"),
         ("library/postgres:14-alpine", "postgres"),
         ("pgautoupgrade/pgautoupgrade:15-alpine", "pgautoupgrade/pgautoupgrade"),
+        (
+            "ghcr.io/immich-app/postgres:17-vectorchord0.3.0-pgvectors0.3.0",
+            "immich-app/postgres",
+        ),
     ],
 )
 def test_get_container_names(tag: str, name: str) -> None:
@@ -123,6 +127,7 @@ def test_get_container_names(tag: str, name: str) -> None:
         ("nextcloud/aio-postgresql", "postgres"),
         ("redis", "redis"),
         ("pgautoupgrade/pgautoupgrade", "postgres"),
+        ("immich-app/postgres", "postgres"),
     ],
 )
 def test_get_backup_provider(container_name: str, name: str) -> None:
