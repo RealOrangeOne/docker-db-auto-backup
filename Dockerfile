@@ -1,4 +1,4 @@
-FROM python:3.13-slim
+FROM python:3.14-slim
 
 ENV SCHEDULE="0 0 * * *"  PYTHONUNBUFFERED=1
 
