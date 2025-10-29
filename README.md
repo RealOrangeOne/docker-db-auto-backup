@@ -18,6 +18,18 @@ A script to automatically back up all databases running under docker on a host, 
   - Immich's [Postgres VectorChord](https://ghcr.io/immich-app/postgres)
 - Redis
 
+### Custom Backup Providers
+
+You can extend the existing backup providers with additional container patterns by setting environment variables:
+
+```
+CUSTOM_BACKUP_PROVIDER_POSTGRES_PATTERNS=immich-app/postgres,my-custom-postgres
+CUSTOM_BACKUP_PROVIDER_MYSQL_PATTERNS=my-custom-mysql,another-mysql-container
+CUSTOM_BACKUP_PROVIDER_REDIS_PATTERNS=my-custom-redis
+```
+
+Each variable should contain a comma-separated list of container patterns to match.
+
 ## Installation
 
 This container requires access to the docker socket. This can be done either by mounting `/var/lib/docker.sock`, or using a HTTP proxy to provide it through `$DOCKER_HOST`.
@@ -56,6 +68,9 @@ services:
     environment:
       - SUCCESS_HOOK_URL=https://hc-ping.com/1234
       - INCLUDE_LOGS=true
+      # Custom backup provider patterns
+      - CUSTOM_BACKUP_PROVIDER_POSTGRES_PATTERNS=immich-app/postgres,custom-postgres
+      - CUSTOM_BACKUP_PROVIDER_MYSQL_PATTERNS=my-custom-mysql
 ```
 
 ### Oneshot

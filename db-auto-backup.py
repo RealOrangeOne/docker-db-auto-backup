@@ -156,6 +156,39 @@ BACKUP_PROVIDERS: list[BackupProvider] = [
     ),
 ]
 
+# Extend backup providers with custom patterns from environment variables
+# Format: CUSTOM_BACKUP_PROVIDER_<provider_name>_PATTERNS=pattern1,pattern2,...
+for env_var, value in os.environ.items():
+    if env_var.startswith("CUSTOM_BACKUP_PROVIDER_") and env_var.endswith("_PATTERNS"):
+        provider_name = (
+            env_var.replace("CUSTOM_BACKUP_PROVIDER_", "")
+            .replace("_PATTERNS", "")
+            .lower()
+        )
+        custom_patterns = [
+            pattern.strip() for pattern in value.split(",") if pattern.strip()
+        ]
+
+        # Find the provider and extend its patterns
+        for provider in BACKUP_PROVIDERS:
+            if provider.name.lower() == provider_name:
+                # Create a new BackupProvider with extended patterns
+                index = BACKUP_PROVIDERS.index(provider)
+                BACKUP_PROVIDERS[index] = BackupProvider(
+                    name=provider.name,
+                    patterns=provider.patterns + custom_patterns,
+                    backup_method=provider.backup_method,
+                    file_extension=provider.file_extension,
+                )
+                print(
+                    f"Extended {provider.name} backup provider with patterns: {', '.join(custom_patterns)}"
+                )
+                break
+        else:
+            print(
+                f"Warning: Custom backup provider {provider_name} not found, skipping patterns: {', '.join(custom_patterns)}"
+            )
+
 
 BACKUP_DIR = Path(os.environ.get("BACKUP_DIR", "/var/backups"))
 SCHEDULE = os.environ.get("SCHEDULE", "0 0 * * *")

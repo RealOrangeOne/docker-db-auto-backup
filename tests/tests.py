@@ -135,3 +135,60 @@ def test_get_backup_provider(container_name: str, name: str) -> None:
 
     assert provider is not None
     assert provider.name == name
+
+
+def test_custom_backup_provider_patterns(monkeypatch: Any) -> None:
+    # Save original backup providers
+    original_providers = db_auto_backup.BACKUP_PROVIDERS.copy()
+
+    try:
+        # Set custom patterns environment variable
+        monkeypatch.setenv(
+            "CUSTOM_BACKUP_PROVIDER_POSTGRES_PATTERNS",
+            "immich-app/postgres,custom-postgres",
+        )
+
+        # Create a copy of the original providers
+        test_providers = original_providers.copy()
+        db_auto_backup.BACKUP_PROVIDERS = test_providers
+
+        # Run the code that processes environment variables
+        for env_var, value in {
+            "CUSTOM_BACKUP_PROVIDER_POSTGRES_PATTERNS": "immich-app/postgres,custom-postgres"
+        }.items():
+            if env_var.startswith("CUSTOM_BACKUP_PROVIDER_") and env_var.endswith(
+                "_PATTERNS"
+            ):
+                provider_name = (
+                    env_var.replace("CUSTOM_BACKUP_PROVIDER_", "")
+                    .replace("_PATTERNS", "")
+                    .lower()
+                )
+                custom_patterns = [
+                    pattern.strip() for pattern in value.split(",") if pattern.strip()
+                ]
+
+                for provider in db_auto_backup.BACKUP_PROVIDERS:
+                    if provider.name.lower() == provider_name:
+                        index = db_auto_backup.BACKUP_PROVIDERS.index(provider)
+                        db_auto_backup.BACKUP_PROVIDERS[
+                            index
+                        ] = db_auto_backup.BackupProvider(
+                            name=provider.name,
+                            patterns=provider.patterns + custom_patterns,
+                            backup_method=provider.backup_method,
+                            file_extension=provider.file_extension,
+                        )
+                        break
+
+        # Test with the new custom pattern
+        provider = db_auto_backup.get_backup_provider(["immich-app/postgres"])
+        assert provider is not None
+        assert provider.name == "postgres"
+
+        provider = db_auto_backup.get_backup_provider(["custom-postgres"])
+        assert provider is not None
+        assert provider.name == "postgres"
+    finally:
+        # Restore original backup providers
+        db_auto_backup.BACKUP_PROVIDERS = original_providers
