@@ -1,6 +1,6 @@
 -r requirements.txt
 
-black==23.12.1
+black==26.3.1
 ruff==0.11.8
 mypy==1.15.0
 types-requests
