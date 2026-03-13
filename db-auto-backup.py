@@ -138,6 +138,8 @@ BACKUP_PROVIDERS: list[BackupProvider] = [
             "pgvector/pgvector",
             "pgautoupgrade/pgautoupgrade",
             "immich-app/postgres",
+            "postgis/postgis",
+            "kartoza/postgis",
         ],
         backup_method=backup_psql,
         file_extension="sql",
