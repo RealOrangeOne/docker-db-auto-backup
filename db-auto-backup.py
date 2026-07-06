@@ -175,17 +175,52 @@ def get_backup_provider(container_names: Iterable[str]) -> Optional[BackupProvid
     return None
 
 
+def _name_from_image_reference(reference: str) -> Optional[str]:
+    """
+    Extract the image name from a tag or digest reference.
+
+    Handles three forms:
+      - ``name:tag``            (e.g. ``postgres:14-alpine``)
+      - ``name@digest``         (e.g. ``ghcr.io/immich-app/postgres@sha256:abc...``)
+      - ``registry/name:tag@digest`` (e.g. ``docker.io/library/postgres:14@sha256:abc...``)
+    """
+    # Strip the digest suffix if present (e.g. @sha256:...).
+    # We only care about the name part for matching against patterns.
+    image_ref = reference.split("@", 1)[0]
+    if not image_ref:
+        return None
+
+    registry, image = docker.auth.resolve_repository_name(image_ref)
+
+    # HACK: Strip "library" from official images
+    if registry == docker.auth.INDEX_NAME:
+        image = image.removeprefix("library/")
+
+    # Tags may be absent when the image was referenced only by digest, so
+    # `:` may not appear. In that case, the whole string is the name.
+    if ":" in image:
+        image, _ = image.split(":", 1)
+
+    return image
+
+
 def get_container_names(container: Container) -> Iterable[str]:
-    names = set()
-    for tag in container.image.tags:
-        registry, image = docker.auth.resolve_repository_name(tag)
+    names: set[str] = set()
 
-        # HACK: Strip "library" from official images
-        if registry == docker.auth.INDEX_NAME:
-            image = image.removeprefix("library/")
+    # Prefer `RepoTags` for the common case. When the image was pulled by
+    # digest, this is empty and we fall back to the original image reference
+    # stored on the container's config, which preserves the digest form.
+    references: list[str] = list(container.image.tags)
+    if not references:
+        config_image = (container.attrs.get("Config") or {}).get("Image")
+        if config_image:
+            references.append(config_image)
 
-        image, tag_name = image.split(":", 1)
-        names.add(image)
+    for reference in references:
+        name = _name_from_image_reference(reference)
+        if name:
+            names.add(name)
+
     return names
 
 

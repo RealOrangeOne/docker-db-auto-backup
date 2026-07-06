@@ -135,3 +135,72 @@ def test_get_backup_provider(container_name: str, name: str) -> None:
 
     assert provider is not None
     assert provider.name == name
+
+
+@pytest.mark.parametrize(
+    "reference,name",
+    [
+        (
+            "ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:"
+            "32324a2f41df5de9efe1af166b7008c3f55646f8d0e00d9550c16c9822366b4a",
+            "immich-app/postgres",
+        ),
+        (
+            "postgres@sha256:32324a2f41df5de9efe1af166b7008c3f55646f8d0e00d9550c16c9822366b4a",
+            "postgres",
+        ),
+        (
+            "docker.io/library/postgres@sha256:32324a2f41df5de9efe1af166b7008c3f55646f8d0e00d9550c16c9822366b4a",
+            "postgres",
+        ),
+        (
+            "ghcr.io/realorangeone/db-auto-backup@sha256:32324a2f41df5de9efe1af166b7008c3f55646f8d0e00d9550c16c9822366b4a",
+            "realorangeone/db-auto-backup",
+        ),
+    ],
+)
+def test_name_from_image_reference_with_digest(reference: str, name: str) -> None:
+    assert db_auto_backup._name_from_image_reference(reference) == name
+
+
+@pytest.mark.parametrize(
+    "reference,name",
+    [
+        ("postgres:14-alpine", "postgres"),
+        ("ghcr.io/realorangeone/db-auto-backup:latest", "realorangeone/db-auto-backup"),
+        ("postgres", "postgres"),
+        ("ghcr.io/immich-app/postgres", "immich-app/postgres"),
+    ],
+)
+def test_name_from_image_reference_without_digest(reference: str, name: str) -> None:
+    assert db_auto_backup._name_from_image_reference(reference) == name
+
+
+def test_get_container_names_falls_back_to_config_image() -> None:
+    """
+    Images pulled by digest (e.g. `image@sha256:...`) have an empty
+    `RepoTags` list. `get_container_names` should fall back to the
+    container's `Config.Image` so the container is still detected.
+    """
+    container = MagicMock()
+    container.image.tags = []
+    container.attrs = {
+        "Config": {
+            "Image": (
+                "ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0"
+                "@sha256:32324a2f41df5de9efe1af166b7008c3f55646f8d0e00d9550c16c9822366b4a"
+            )
+        }
+    }
+    assert db_auto_backup.get_container_names(container) == {"immich-app/postgres"}
+
+
+def test_get_container_names_empty_when_no_reference() -> None:
+    """
+    When both `RepoTags` and `Config.Image` are missing or empty, the
+    container should simply produce no names (not crash).
+    """
+    container = MagicMock()
+    container.image.tags = []
+    container.attrs = {"Config": {}}
+    assert db_auto_backup.get_container_names(container) == set()
