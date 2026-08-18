@@ -134,6 +134,7 @@ BACKUP_PROVIDERS: list[BackupProvider] = [
             "postgres",
             "tensorchord/pgvecto-rs",
             "nextcloud/aio-postgresql",
+            "nextloud-releases/aio-postgresql",
             "timescale/timescaledb",
             "pgvector/pgvector",
             "pgautoupgrade/pgautoupgrade",
