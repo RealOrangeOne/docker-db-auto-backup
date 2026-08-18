@@ -193,6 +193,7 @@ def get_container_names(container: Container) -> Iterable[str]:
 
     return names
 
+
 def resolve_image(tag: str) -> str:
     """
     Resolve an image tag to its canonical name.
@@ -212,6 +213,7 @@ def resolve_image(tag: str) -> str:
 
     image_only = image.split(":", 1)[0]
     return image_only
+
 
 @pycron.cron(SCHEDULE)
 def backup(now: datetime) -> None:
