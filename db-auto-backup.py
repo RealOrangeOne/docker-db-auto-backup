@@ -134,6 +134,7 @@ BACKUP_PROVIDERS: list[BackupProvider] = [
             "postgres",
             "tensorchord/pgvecto-rs",
             "nextcloud/aio-postgresql",
+            "nextloud-releases/aio-postgresql",
             "timescale/timescaledb",
             "pgvector/pgvector",
             "pgautoupgrade/pgautoupgrade",
@@ -180,15 +181,38 @@ def get_backup_provider(container_names: Iterable[str]) -> Optional[BackupProvid
 def get_container_names(container: Container) -> Iterable[str]:
     names = set()
     for tag in container.image.tags:
-        registry, image = docker.auth.resolve_repository_name(tag)
-
-        # HACK: Strip "library" from official images
-        if registry == docker.auth.INDEX_NAME:
-            image = image.removeprefix("library/")
-
-        image, tag_name = image.split(":", 1)
+        image = resolve_image(tag)
         names.add(image)
+
+    # Fallback in case image was pulled via digest instead of tag
+    if not names:
+        image_field = container.attrs.get("Config", {}).get("Image")
+        if image_field:
+            image = resolve_image(image_field)
+            names.add(image)
+
     return names
+
+
+def resolve_image(tag: str) -> str:
+    """
+    Resolve an image tag to its canonical name.
+
+    For example, "postgres:latest" becomes "postgres".
+    """
+    try:
+        registry, image = docker.auth.resolve_repository_name(tag)
+    except Exception:
+        # If resolve_repository_name fails, just use the raw value
+        image = tag
+        registry = None
+
+    # HACK: Strip "library" from official images
+    if registry == docker.auth.INDEX_NAME:
+        image = image.removeprefix("library/")
+
+    image_only = image.split(":", 1)[0]
+    return image_only
 
 
 @pycron.cron(SCHEDULE)
