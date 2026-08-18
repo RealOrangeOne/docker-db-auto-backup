@@ -18,6 +18,26 @@ A script to automatically back up all databases running under docker on a host, 
   - Immich's [Postgres VectorChord](https://ghcr.io/immich-app/postgres)
 - Redis
 
+If your database isn't detected automatically, you can specify using the `db-auto-backup` label (configurable using `$AUTO_BACKUP_LABEL`):
+
+```yaml
+services:
+  valkey:
+    image: valkey/valkey:9
+    labels:
+      - "auto-backup=redis"  # Backup as if it were redis
+
+  my_custom_database:
+    image: some.private.host/organization/custom_database:latest
+    labels:
+      - "auto-backup=postgres"  # Force identification as postgres
+
+  unimportant:
+    image: postgres:18
+    labels:
+      - "auto-backup=false" # Skip backup
+```
+
 ## Installation
 
 This container requires access to the docker socket. This can be done either by mounting `/var/lib/docker.sock`, or using a HTTP proxy to provide it through `$DOCKER_HOST`.

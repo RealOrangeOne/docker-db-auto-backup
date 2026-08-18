@@ -164,7 +164,7 @@ SCHEDULE = os.environ.get("SCHEDULE", "0 0 * * *")
 SHOW_PROGRESS = sys.stdout.isatty()
 COMPRESSION = os.environ.get("COMPRESSION", "plain")
 INCLUDE_LOGS = bool(os.environ.get("INCLUDE_LOGS"))
-AUTO_BACKUP_LABEL = os.environ.get("AUTO_BACKUP_LABEL", "auto-backup")
+AUTO_BACKUP_LABEL = os.environ.get("AUTO_BACKUP_LABEL", "db-auto-backup")
 DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
 
 
