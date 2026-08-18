@@ -26,6 +26,8 @@ Mount your backup directory as `/var/backups` (or override `$BACKUP_DIR`). Backu
 
 Backups run daily at midnight. To change this, add a cron-style schedule to `$SCHEDULE`. For more information on the format of the cron strings, please see the [croniter documentation on PyPI](https://pypi.org/project/croniter/).
 
+Output is intentionally limited, to avoid polluting container logs. Set `$DEBUG` to something other than `"false"` to show additional details.
+
 ### Success hooks
 
 When backups are completed successfully, a request can be made to the URL defined in `$SUCCESS_HOOK_URL`. By default, a `GET` request is made. To include logs, also set `$INCLUDE_LOGS` to a non-empty value, which sends a `POST` request instead with helpful details in the body.

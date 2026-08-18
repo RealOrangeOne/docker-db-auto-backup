@@ -165,6 +165,7 @@ SHOW_PROGRESS = sys.stdout.isatty()
 COMPRESSION = os.environ.get("COMPRESSION", "plain")
 INCLUDE_LOGS = bool(os.environ.get("INCLUDE_LOGS"))
 AUTO_BACKUP_LABEL = os.environ.get("AUTO_BACKUP_LABEL", "auto-backup")
+DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
 
 
 def get_backup_provider(container_names: Iterable[str]) -> Optional[BackupProvider]:
@@ -204,15 +205,25 @@ def backup(now: datetime) -> None:
     for container in containers:
         if auto_backup_label := container.labels.get(AUTO_BACKUP_LABEL):
             if auto_backup_label.lower() == "false":
-                print(f"Skipping {container.name} because label {AUTO_BACKUP_LABEL}=false")
+                if DEBUG:
+                    print(
+                        f"Skipping {container.name} because label {AUTO_BACKUP_LABEL}=false"
+                    )
                 continue
-            print(f"Found explicit {AUTO_BACKUP_LABEL} label for {container.name}, using {auto_backup_label}")
+            if DEBUG:
+                print(
+                    f"Found explicit {AUTO_BACKUP_LABEL} label for {container.name}, using {auto_backup_label}"
+                )
             backup_provider = get_backup_provider([auto_backup_label])
         else:
             container_names = get_container_names(container)
             backup_provider = get_backup_provider(container_names)
 
         if backup_provider is None:
+            if DEBUG:
+                print(
+                    f"Unable to find backup provider for {container.name}. Names: {container_names}"
+                )
             continue
 
         backup_file = (
@@ -225,6 +236,9 @@ def backup(now: datetime) -> None:
         _, output = container.exec_run(backup_command, stream=True, demux=True)
 
         description = f"{container.name} ({backup_provider.name})"
+
+        if DEBUG:
+            print("Starting backup for", description)
 
         with open_file_compressed(
             backup_temp_file_path, COMPRESSION
