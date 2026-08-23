@@ -61,6 +61,7 @@ Files are backed up uncompressed by default, on the assumption a snapshotting or
 - `gzip`
 - `lzma` / `xz`
 - `bz2`
+- `zstd`
 - `plain` (no compression - the default)
 
 ### Example `docker-compose.yml`

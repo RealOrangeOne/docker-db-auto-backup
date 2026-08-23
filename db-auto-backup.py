@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-import bz2
 import fnmatch
-import gzip
-import lzma
 import os
 import secrets
 import sys
@@ -14,6 +11,7 @@ from typing import IO, Callable, Dict, Iterable, NamedTuple, Optional
 import docker
 import pycron
 import requests
+from compression import bz2, gzip, lzma, zstd
 from docker.models.containers import Container
 from dotenv import dotenv_values
 from tqdm.auto import tqdm
@@ -58,11 +56,13 @@ def open_file_compressed(file_path: Path, algorithm: str) -> IO[bytes]:
     file_path.touch(mode=0o600)
 
     if algorithm == "gzip":
-        return gzip.open(file_path, mode="wb")  # type:ignore
+        return gzip.open(file_path, mode="wb")
     elif algorithm in ["lzma", "xz"]:
         return lzma.open(file_path, mode="wb")
     elif algorithm == "bz2":
         return bz2.open(file_path, mode="wb")
+    elif algorithm == "zstd":
+        return zstd.open(file_path, mode="wb")
     elif algorithm == "plain":
         return file_path.open(mode="wb")
     raise ValueError(f"Unknown compression method {algorithm}")
@@ -75,6 +75,8 @@ def get_compressed_file_extension(algorithm: str) -> str:
         return ".xz"
     elif algorithm == "bz2":
         return ".bz2"
+    elif algorithm == "zstd":
+        return ".zst"
     elif algorithm == "plain":
         return ""
     raise ValueError(f"Unknown compression method {algorithm}")

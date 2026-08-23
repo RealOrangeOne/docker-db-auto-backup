@@ -46,7 +46,14 @@ def test_backup_runs(run_backup: Callable) -> None:
 
 @pytest.mark.parametrize(
     "algorithm,extension",
-    [("gzip", ".gz"), ("lzma", ".xz"), ("xz", ".xz"), ("bz2", ".bz2"), ("plain", "")],
+    [
+        ("gzip", ".gz"),
+        ("lzma", ".xz"),
+        ("xz", ".xz"),
+        ("bz2", ".bz2"),
+        ("zstd", ".zst"),
+        ("plain", ""),
+    ],
 )
 def test_backup_runs_compressed(
     run_backup: Callable, algorithm: str, extension: str
